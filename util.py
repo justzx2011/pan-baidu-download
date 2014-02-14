@@ -35,3 +35,25 @@ def check_url(raw_url=""):
 
 add_http = lambda url: url if url.startswith('http://') else 'http://'+url
 
+
+# from http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
+# THANKS!
+
+class BColor(object):
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
+    def disable(self):
+        self.HEADER = ''
+        self.OKBLUE = ''
+        self.OKGREEN = ''
+        self.WARNING = ''
+        self.FAIL = ''
+        self.ENDC = ''
+
+bcolor = BColor()
+
