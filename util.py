@@ -3,6 +3,8 @@
 
 import bddown_help
 
+URL = ['pan.baidu.com', 'yun.baidu.com']
+
 
 def bd_help(args):
     if len(args) == 1:
@@ -20,8 +22,6 @@ def usage(doc=bddown_help.usage, message=None):
     if message:
         print message
     print doc.strip()
-
-URL = ['pan.baidu.com', 'yun.baidu.com']
 
 
 def check_url(raw_url=""):

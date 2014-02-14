@@ -16,18 +16,18 @@ from command.config import configure
 
 
 class BaiduDown(object):
+    cookjar = cookielib.LWPCookieJar()
+    if os.access(configure.cookies, os.F_OK):
+        cookjar.load(configure.cookies)
+    opener = urllib2.build_opener(
+        urllib2.HTTPCookieProcessor(cookjar)
+    )
+    opener.addheaders = [
+        ('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:26.0) Gecko/20100101 Firefox/26.0')
+    ]
+
     def __init__(self, raw_link):
         self.bdlink = raw_link
-        self.cookjar = cookielib.LWPCookieJar()
-        if os.access(configure.cookies, os.F_OK):
-            self.cookjar.load(configure.cookies)
-        self.opener = urllib2.build_opener(
-            urllib2.HTTPCookieProcessor(self.cookjar)
-        )
-        self.opener.addheaders = [
-            ('Referer', self.bdlink),
-            ('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:26.0) Gecko/20100101 Firefox/26.0')
-        ]
         self.data = self._get_download_page()
         self.fid_list, self.share_uk, self.share_id, self.timestamp, self.sign = self._get_info()
 
