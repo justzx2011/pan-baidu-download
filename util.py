@@ -4,6 +4,7 @@
 import bddown_help
 
 URL = ['pan.baidu.com', 'yun.baidu.com']
+FILTER_KEYS = ['shareid', 'server_filename', 'isdir', 'fs_id', 'sign', 'md5', 'shorturl']
 
 
 def bd_help(args):
@@ -57,3 +58,23 @@ class BColor(object):
 
 bcolor = BColor()
 
+in_list = lambda key, want_keys: key in want_keys
+
+
+def filter_dict(bool_func, dictionary, want_keys):
+    filtered_dict = {}
+    for each_key in dictionary.keys():
+        if bool_func(each_key, want_keys):
+            filtered_dict[each_key] = dictionary[each_key]
+    return filtered_dict
+
+
+def merge_dict(dictionary, key):
+    dictionary.update(dictionary[key][0])
+    del dictionary[key]
+    return dictionary
+
+
+def filter_dict_wrapper(dictionary):
+    dictionary = merge_dict(dictionary, 'filelist')
+    return filter_dict(in_list, dictionary, FILTER_KEYS)
