@@ -26,10 +26,77 @@ class BaiduDown(object):
         ('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:26.0) Gecko/20100101 Firefox/26.0')
     ]
 
+    def __init__(self, raw_link="", filename="", bdstoken="", fs_id="", uk="", shareid="", timestamp="", sign=""):
+        self.filename = filename
+        self.bdstoken = bdstoken
+        self.fs_id = fs_id
+        self.uk = uk
+        self.shareid = shareid
+        self.timestamp = timestamp
+        self.sign = sign
+        if raw_link:
+            self.initialize(raw_link)
+
+    def _get_json(self, input_code=None, vcode=None):
+        url = 'http://pan.baidu.com/share/download?channel=chunlei&clienttype=0&web=1' \
+              '&uk=%s&shareid=%s&timestamp=%s&sign=%s&bdstoken=%s%s%s' \
+              '&channel=chunlei&clienttype=0&web=1' % \
+              (self.uk, self.shareid, self.timestamp, self.sign, self.bdstoken,
+               convert_none('&input=', input_code),
+               convert_none('&vcode=', vcode))
+        post_data = 'fid_list=["%s"]' % self.fs_id
+        req = self.opener.open(url, post_data)
+        json_data = json.load(req)
+        return json_data
+
+    def initialize(self, link):
+        info = ShareInfo(link)
+        self.filename = info.filename
+        self.bdstoken = info.bdstoken
+        self.uk = info.uk
+        self.shareid = info.shareid
+        self.fs_id = info.fs_id
+        self.timestamp = info.timestamp
+        self.sign = info.sign
+
+    @staticmethod
+    def save(img):
+        data = urllib2.urlopen(img).read()
+        with open(os.path.dirname(os.path.abspath(__file__)) + '/vcode.jpg', mode='wb') as fp:
+            fp.write(data)
+        print "验证码已经保存至", os.path.dirname(os.path.abspath(__file__))
+
+    @property
+    def link(self):
+        data = self._get_json()
+        logging.debug(data)
+        if not data.get('errno'):
+            return data.get('dlink').encode('utf-8')
+        else:
+            vcode = data.get('vcode')
+            img = data.get('img')
+            self.save(img)
+            input_code = raw_input("请输入看到的验证码\n")
+            data = self._get_json(vcode=vcode, input_code=input_code)
+            if not data.get('errno'):
+                return data.get('dlink').encode('utf-8')
+            else:
+                raise VerificationError("验证码错误\n")
+
+
+class ShareInfo(object):
     def __init__(self, raw_link):
+        self.opener = BaiduDown.opener
         self.bdlink = raw_link
         self.data = self._get_download_page()
-        self.fid_list, self.share_uk, self.share_id, self.timestamp, self.sign = self._get_info()
+        self.filename = ""
+        self.bdstoken = ""
+        self.fs_id = ""
+        self.uk = ""
+        self.shareid = ""
+        self.timestamp = ""
+        self.sign = ""
+        self._get_info()
 
     def _get_download_page(self):
         req = self.opener.open(self.bdlink)
@@ -40,34 +107,20 @@ class BaiduDown(object):
         return data
 
     def _get_info(self):
-        status = True
-        fid_pattern = re.compile(r'disk.util.ViewShareUtils.fsId="(.+?)"', re.DOTALL)
-        try:
-            fid_list = re.findall(fid_pattern, self.data)[0]
-        except IndexError:
-            status = False
-        pattern = re.compile(r'FileUtils.share_uk="(\d+)";FileUtils.share_id="(\d+)";.+?;'
-                             r'FileUtils.share_timestamp="(\d+)";FileUtils.share_sign="(.+?)"', re.DOTALL)
-        try:
-            info = re.findall(pattern, self.data)[0]
-            share_uk, share_id, timestamp, sign = info
-        except IndexError:
-            status = False
-        if status:
-            return fid_list, share_uk, share_id, timestamp, sign
-        else:
-            return None, None, None, None, None
-
-    def _get_json(self, input_code=None, vcode=None):
-        url = 'http://pan.baidu.com/share/download?channel=chunlei&clienttype=0&web=1' \
-              '&uk=%s&shareid=%s&timestamp=%s&sign=%s&fid_list=["%s"]%s%s' \
-              '&channel=chunlei&clienttype=0&web=1' % \
-              (self.share_uk, self.share_id, self.timestamp, self.sign, self.fid_list,
-               convert_none('&input=', input_code),
-               convert_none('&vcode=', vcode))
-        req = self.opener.open(url)
-        json_data = json.load(req)
-        return json_data
+        pattern = re.compile('server_filename="(.+?)";disk.util.ViewShareUtils.bdstoken="(\w+)";'
+                             'disk.util.ViewShareUtils.fsId="(\d+)".+?FileUtils.share_uk="(\d+)";'
+                             'FileUtils.share_id="(\d+)";.+?FileUtils.share_timestamp="(\d+)";'
+                             'FileUtils.share_sign="(\w+)";', re.DOTALL)
+        info = re.search(pattern, self.data)
+        if not info:
+            raise IndexError("无法获取该分享文件的信息\n")
+        self.filename = info.group(1)
+        self.bdstoken = info.group(2)
+        self.fs_id = info.group(3)
+        self.uk = info.group(4)
+        self.shareid = info.group(5)
+        self.timestamp = info.group(6)
+        self.sign = info.group(7)
 
     def _verify_passwd(self, url):
         pwd = raw_input("请输入提取密码\n")
@@ -87,39 +140,6 @@ class BaiduDown(object):
     # TODO
     def _vcode_handle(self):
         raise VerificationError("提取密码错误\n")
-
-    @staticmethod
-    def save(img):
-        data = urllib2.urlopen(img).read()
-        with open(os.path.dirname(os.path.abspath(__file__)) + '/vcode.jpg', mode='wb') as fp:
-            fp.write(data)
-        print "验证码已经保存至", os.path.dirname(os.path.abspath(__file__))
-
-    @property
-    def link(self):
-        data = self._get_json()
-        if not data.get('errno'):
-            return data.get('dlink').encode('utf-8')
-        else:
-            vcode = data.get('vcode')
-            img = data.get('img')
-            self.save(img)
-            input_code = raw_input("请输入看到的验证码\n")
-            data = self._get_json(vcode=vcode, input_code=input_code)
-            if not data.get('errno'):
-                return data.get('dlink').encode('utf-8')
-            else:
-                raise VerificationError("验证码错误\n")
-
-    @property
-    def filename(self):
-        file_pattern = re.compile(r'server_filename\\":\\"(.+?)\\"')
-        try:
-            filename = re.search(file_pattern, self.data).group(1)
-            filename = filename.replace("\\\\", "\\").decode("unicode escape").encode("utf-8")
-        except AttributeError:
-            raise GetFilenameError("无法获取文件名")
-        return filename
 
 
 class VerificationError(Exception):
