@@ -4,7 +4,8 @@
 import bddown_help
 
 URL = ['pan.baidu.com', 'yun.baidu.com']
-FILTER_KEYS = ['shareid', 'server_filename', 'isdir', 'fs_id', 'sign', 'md5', 'shorturl']
+FILTER_KEYS = ['shareid', 'server_filename', 'isdir', 'fs_id', 'sign', 'time_stamp', 'shorturl']
+# TODO: add md5
 
 
 def bd_help(args):

@@ -2,7 +2,7 @@
 import time
 import json
 
-from bddown_core import BaiduDown
+from bddown_core import BaiduDown, download_command
 from util import filter_dict_wrapper as filter_dict
 from util import bcolor
 
@@ -13,12 +13,14 @@ def home(args):
         # find uk
         uk = (lambda s: s[35:]if s.find('#') == -1 else s[35:s.find('#')])(url)
         filelist = FileList(uk)
-        filelist.show()
+        filelist.download()
 
 
 class FileList(object):
     def __init__(self, uk):
         self.opener = BaiduDown.opener
+        cookie = {c.name: c.value for c in BaiduDown.cookjar}
+        self.bdstoken = cookie.get('STOKEN')
         self.page = 1
         self.limit = 20
         self.uk = uk
@@ -63,7 +65,32 @@ class FileList(object):
         self.filelist = map(filter_dict, self._raw_list)
 
     def download(self):
-        pass
+        # Bug: when input code is directory, may raise a error
+        # TODO: download directory
+        self.show()
+        while True:
+            inp = raw_input("请输入想下载的序号（用空格分开，输入a为全部下载，n为下一页）： \n").split()
+            seq = filter(lambda n: n.isdigit() or n == 'n' or n == 'a', inp)
+            if 'n' in seq:
+                self.next()
+                self.show()
+                continue
+            elif 'a' in seq:
+                # download all
+                seq = range(1, self.limit+1)
+            else:
+                try:
+                    # filter the input greater than limit
+                    seq = map(int, filter(lambda n: n <= self.limit, seq))
+                except ValueError:
+                    raise ValueError("输入错误！")
+            for i in seq:
+                info = self.filelist[i]
+                pan = BaiduDown(raw_link='', filename=info.get('server_filename', ''), bdstoken=self.bdstoken,
+                                fs_id=info.get('fs_id'), uk=self.uk, shareid=info.get('shareid'),
+                                timestamp=info.get('time_stamp'), sign=info.get('sign'))
+                download_command(pan.filename, pan.link)
+            break
 
 
 class FetchError(Exception):
