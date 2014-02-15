@@ -48,9 +48,9 @@ class FileList(object):
         dirs.extend(files)
         for index, filename in enumerate(dirs):
             if index < dir_len:
-                print "%s%d %s%s" % (bcolor.OKBLUE, index, filename, bcolor.ENDC)
+                print "%s%d %s%s" % (bcolor.OKBLUE, index+1, filename, bcolor.ENDC)
             else:
-                print "%s%d %s%s" % (bcolor.OKGREEN, index, filename, bcolor.ENDC)
+                print "%s%d %s%s" % (bcolor.OKGREEN, index+1, filename, bcolor.ENDC)
 
     def next(self):
         self.page += 1
@@ -84,11 +84,11 @@ class FileList(object):
             else:
                 try:
                     # filter the input greater than limit
-                    seq = map(int, filter(lambda n: n <= self.limit, seq))
+                    seq = map(int, filter(lambda n: int(n) <= self.limit and int(n) > 0, seq))
                 except ValueError:
                     raise ValueError("输入错误！")
             for i in seq:
-                info = self.filelist[i]
+                info = self.filelist[i-1]
                 pan = BaiduDown(raw_link='', filename=info.get('server_filename', ''), bdstoken=self.bdstoken,
                                 fs_id=info.get('fs_id'), uk=self.uk, shareid=info.get('shareid'),
                                 timestamp=info.get('time_stamp'), sign=info.get('sign'))
