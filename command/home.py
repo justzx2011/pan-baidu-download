@@ -19,11 +19,14 @@ def home(args):
 class FileList(object):
     def __init__(self, uk):
         self.opener = BaiduDown.opener
+        self.page = 1
+        self.limit = 20
         self.uk = uk
         # &bdstoken=%(token)s % {'token': token}
         self._url = 'http://pan.baidu.com/pcloud/feed/getsharelist?t=%(unix_time)d&category=0&auth_type=1' \
-                    '&request_location=share_home&start=0&limit=20&query_uk=%(uk)s' \
-                    '&channel=chunlei&clienttype=0&web=1' % {'unix_time': int(time.time()), 'uk': self.uk}
+                    '&request_location=share_home&start=%(index)d&limit=%(limit)d&query_uk=%(uk)s' \
+                    '&channel=chunlei&clienttype=0&web=1' % {'unix_time': int(time.time()), 'index': (self.page-1),
+                                                             'limit': self.limit, 'uk': self.uk}
         data = json.load(self.opener.open(self._url))
         if data.get('errno', -1):
             raise FetchError('无法抓取该页面')
@@ -44,10 +47,24 @@ class FileList(object):
             else:
                 print "%s%d %s%s" % (bcolor.OKGREEN, index, filename, bcolor.ENDC)
 
+    def next(self):
+        self.page += 1
+        self._url = 'http://pan.baidu.com/pcloud/feed/getsharelist?t=%(unix_time)d&category=0&auth_type=1' \
+                    '&request_location=share_home&start=%(index)d&limit=%(limit)d&query_uk=%(uk)s' \
+                    '&channel=chunlei&clienttype=0&web=1' % {'unix_time': int(time.time()), 'index': (self.page-1),
+                                                             'limit': self.limit, 'uk': self.uk}
+        data = json.load(self.opener.open(self._url))
+        if data.get('errno', -1):
+            raise FetchError('无法抓取该页面')
+        total_count = data.get('total_count', 0)
+        if not total_count:
+            raise IndexError('该用户分享为空')
+        self._raw_list = iter(data.get('records', []))
+        self.filelist = map(filter_dict, self._raw_list)
+
     def download(self):
         pass
 
 
 class FetchError(Exception):
     pass
-
