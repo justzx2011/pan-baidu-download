@@ -60,7 +60,7 @@ Download share home directory
 
 Example:
 
-  python bddown_cli.py home http://pan.baidu.com/share/home?uk=2650932610#category/type=0
+  python bddown_cli.py home http://pan.baidu.com/share/home?uk=3106804843#category/type=0
 
 '''
 

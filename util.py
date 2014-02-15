@@ -71,6 +71,9 @@ def filter_dict(bool_func, dictionary, want_keys):
 
 
 def merge_dict(dictionary, key):
+    # merge error
+    # Bug: unspport show album
+    # TODO: filter album type
     dictionary.update(dictionary[key][0])
     del dictionary[key]
     return dictionary
