@@ -1,6 +1,7 @@
 # coding=utf-8
 import time
 import json
+import urlparse
 
 from bddown_core import BaiduDown, download_command
 from util import filter_dict_wrapper as filter_dict
@@ -11,7 +12,9 @@ def home(args):
     url = args[0]
     if 'uk' in url:
         # find uk
-        uk = (lambda s: s[35:]if s.find('#') == -1 else s[35:s.find('#')])(url)
+        result = urlparse.urlparse(url).query
+        query = urlparse.parse_qs(result)
+        uk = query.get('uk', [])[0]
         filelist = FileList(uk)
         filelist.download()
 
