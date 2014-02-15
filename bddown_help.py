@@ -5,6 +5,7 @@ basic_command = [
     ('help',        'Show this help'),
     ('login',       'Login using Baidu account'),
     ('download',    'Download file from the Baidu netdisk link'),
+    ('home',        'Download file from user\'s home page'),
     ('show',        'Show the Baidu netdisk real link and filename'),
     ('export',      'export link to aria2 json-rpc'),
     ('config',      'save configuration to file')
@@ -52,6 +53,16 @@ Download file from the Baidu netdisk link
 Options:
     --limit=[speed]             Max download speed limit.
     --output-dir=[dir]          Download task to dir.'''
+
+home = '''python bddown_cli.py home [Baidupan-home-url]...
+
+Download share home directory
+
+Example:
+
+  python bddown_cli.py home http://pan.baidu.com/share/home?uk=2650932610#category/type=0
+
+'''
 
 show = '''python bddown_cli.py show [Baidupan-url]...
 

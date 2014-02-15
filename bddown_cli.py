@@ -10,6 +10,7 @@ from command.show import show
 from command.login import login
 from command.config import config
 from command.export import export
+from command.home import home
 
 
 def execute_command(args=sys.argv[1:]):
@@ -32,6 +33,8 @@ def execute_command(args=sys.argv[1:]):
         'help':         bd_help,
         'login':        login,
         'download':     download,
+        'd':            download,   # alias download
+        'home':         home,
         'export':       export,
         'show':         show,
         'config':       config
