@@ -84,7 +84,7 @@ class FileList(object):
             else:
                 try:
                     # filter the input greater than limit
-                    seq = map(int, filter(lambda n: int(n) <= self.limit and int(n) > 0, seq))
+                    seq = map(int, filter(lambda n: self.limit >= len(self.filelist) >= int(n) > 0, seq))
                 except ValueError:
                     raise ValueError("输入错误！")
             for i in seq:
