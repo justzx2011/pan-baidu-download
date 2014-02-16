@@ -74,8 +74,11 @@ def merge_dict(dictionary, key):
     # merge error
     # Bug: unspport show album
     # TODO: filter album type
-    dictionary.update(dictionary[key][0])
-    del dictionary[key]
+    try:
+        dictionary.update(dictionary[key][0])
+        del dictionary[key]
+    except KeyError:
+        pass
     return dictionary
 
 

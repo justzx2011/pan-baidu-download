@@ -26,7 +26,7 @@ class FileList(object):
         self.bdstoken = cookie.get('STOKEN')
         self.page = 1
         self.limit = 20
-        self.uk = uk
+        self.uk = str(uk)
         # &bdstoken=%(token)s % {'token': token}
         self._url = 'http://pan.baidu.com/pcloud/feed/getsharelist?t=%(unix_time)d&category=0&auth_type=1' \
                     '&request_location=share_home&start=%(index)d&limit=%(limit)d&query_uk=%(uk)s' \
