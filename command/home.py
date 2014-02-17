@@ -39,7 +39,11 @@ class FileList(object):
         if not total_count:
             raise IndexError('该用户分享为空')
         self._raw_list = iter(data.get('records', []))
-        self.filelist = map(filter_dict, self._raw_list)
+        _filelist = map(filter_dict, self._raw_list)
+        self.filelist = filter(bool, _filelist)
+
+    def __len__(self):
+        return len(self.filelist)
 
     def show(self):
         files = [i.get('server_filename') for i in self.filelist if not i.get('isdir')]
