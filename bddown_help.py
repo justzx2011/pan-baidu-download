@@ -85,11 +85,12 @@ config = '''python bddown_cli.py config key [value]
 save configuration to config.ini
 
 Examples:
+ python bddown_cli.py config
  python bddown_cli.py config username XXXXX
  python bddown_cli.py config password 123456
  python bddown_cli.py config limit 500k
  python bddown_cli.py config dir /home/john/Downloads
- python bddown_cli.py config save_vcode 1
+ python bddown_cli.py config delete dir
 '''
 
 help_help = '''Get helps:
