@@ -12,13 +12,13 @@ import logging
 from time import time
 
 from util import check_url, add_http
-from command.config import configure
+from command.config import global_config
 
 
 class BaiduDown(object):
     cookjar = cookielib.LWPCookieJar()
-    if os.access(configure.cookies, os.F_OK):
-        cookjar.load(configure.cookies)
+    if os.access(global_config.cookies, os.F_OK):
+        cookjar.load(global_config.cookies)
     opener = urllib2.build_opener(
         urllib2.HTTPCookieProcessor(cookjar)
     )
@@ -154,8 +154,8 @@ convert_none = lambda opt, arg: opt + arg if arg else ""
 
 
 def download(args):
-    limit = configure.limit
-    output_dir = configure.dir
+    limit = global_config.limit
+    output_dir = global_config.dir
     optlist, links = getopt.getopt(args, 'lD', ['limit=', 'dir='])
     for k, v in optlist:
         if k == '--limit':

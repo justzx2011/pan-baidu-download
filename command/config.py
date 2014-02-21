@@ -72,7 +72,7 @@ class Config(object):
         with open(name=self.path, mode='w') as fp:
             self.configfile.write(fp)
 
-configure = Config()
+global_config = Config()
 
 
 def config(configuration):
