@@ -25,7 +25,7 @@ class FileList(object):
         cookie = {c.name: c.value for c in BaiduDown.cookjar}
         self.bdstoken = cookie.get('STOKEN')
         self.page = 1
-        self.limit = 20
+        self.limit = 40
         self.uk = str(uk)
         # &bdstoken=%(token)s % {'token': token}
         self._url = 'http://pan.baidu.com/pcloud/feed/getsharelist?t=%(unix_time)d&category=0&auth_type=1' \
@@ -38,7 +38,7 @@ class FileList(object):
         total_count = data.get('total_count', 0)
         if not total_count:
             raise IndexError('该用户分享为空')
-        self._raw_list = iter(data.get('records', []))
+        self._raw_list = data.get('records', [])
         _filelist = map(filter_dict, self._raw_list)
         self.filelist = filter(bool, _filelist)
 
@@ -46,15 +46,12 @@ class FileList(object):
         return len(self.filelist)
 
     def show(self):
-        files = [i.get('server_filename') for i in self.filelist if not i.get('isdir')]
-        dirs = [i.get('server_filename') for i in self.filelist if i.get('isdir')]
-        dir_len = len(dirs)
-        dirs.extend(files)
-        for index, filename in enumerate(dirs):
-            if index < dir_len:
-                print "%s%d %s%s" % (bcolor.OKBLUE, index+1, filename, bcolor.ENDC)
+        for index, item in enumerate(self._raw_list):
+            # if is dir or set
+            if item.get('filecount') > 1 or item.get('dir_cnt'):
+                print "%s%2d %s%s" % (bcolor.OKBLUE, index+1, item.get('title'), bcolor.ENDC)
             else:
-                print "%s%d %s%s" % (bcolor.OKGREEN, index+1, filename, bcolor.ENDC)
+                print "%s%d %s%s" % (bcolor.OKGREEN, index+1, item.get('title'), bcolor.ENDC)
 
     def next(self):
         self.page += 1
@@ -88,7 +85,7 @@ class FileList(object):
             else:
                 try:
                     # filter the input greater than limit
-                    seq = map(int, filter(lambda n: self.limit >= len(self.filelist) >= int(n) > 0, seq))
+                    seq = [int(i) for i in seq if self.limit >= len(self.filelist) >= int(i)]
                 except ValueError:
                     raise ValueError("输入错误！")
             for i in seq:
