@@ -4,7 +4,8 @@
 import bddown_help
 
 URL = ['pan.baidu.com', 'yun.baidu.com']
-FILTER_KEYS = ['shareid', 'server_filename', 'isdir', 'fs_id', 'sign', 'time_stamp', 'shorturl']
+FILTER_KEYS = ['shareid', 'server_filename', 'isdir', 'fs_id', 'sign', 'time_stamp', 'shorturl', 'dlink',
+               'filelist', 'operation']
 # TODO: add md5
 
 
@@ -83,5 +84,12 @@ def merge_dict(dictionary, key):
 
 
 def filter_dict_wrapper(dictionary):
-    dictionary = merge_dict(dictionary, 'filelist')
-    return filter_dict(in_list, dictionary, FILTER_KEYS)
+    d = {}
+    for (k, v) in dictionary.items():
+        if k in FILTER_KEYS:
+            d[k] = v
+        elif k == 'filelist':
+            d[k] = [filter_dict(in_list, item, FILTER_KEYS) for item in v]
+        elif k == 'operation':
+            d[k] = [filter_dict(in_list, item, FILTER_KEYS) for item in v[0].get('filelist')]
+    return d
