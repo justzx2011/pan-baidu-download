@@ -6,6 +6,7 @@ import urllib2
 import re
 import sys
 import os
+import subprocess
 import json
 import getopt
 import logging
@@ -185,7 +186,7 @@ def download_command(filename, link, limit=None, output_dir=None):
               "dir": convert_none('--dir=', output_dir),
               "link": link
           }
-    os.system(cmd)
+    subprocess.call(cmd, shell=True)
 
 if '__main__' == __name__:
     pass
